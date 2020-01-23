@@ -1,0 +1,15 @@
+{
+    "name": "level-level/twig-loader",
+    "type": "wordpress-plugin",
+    "authors": [
+        {
+            "name": "Coen Jacobs",
+            "email": "coen@level-level.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "twig/twig": "^1.42"
+    }
+}
