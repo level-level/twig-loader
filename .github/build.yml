@@ -1,0 +1,73 @@
+name: Build release package
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  php:
+    name: Build release package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '10.x'
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.4
+          coverage: none
+      - name: Setup WP-CLI
+        run: |
+          curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+          chmod +x wp-cli.phar
+          sudo mv wp-cli.phar /usr/local/bin/wp
+      - name: Generate debugging log
+        run: |
+          echo 'PHP Version:'
+          php --version
+          echo 'PHP Modules:'
+          php -m
+          echo 'Composer:'
+          composer --version
+          echo 'NPM:'
+          npm -v
+          echo 'Node:'
+          node -v
+          echo 'WP-CLI:'
+          wp --info
+      - name: Create plugin directory
+        run: |
+          mkdir -p wp-content/plugins/twig-loader/
+      - name: Checkout plugin repository
+        uses: actions/checkout@v2
+        with:
+          path: wp-content/plugins/twig-loader/
+          fetch-depth: 1
+      - name: Install composer dependencies (excluding dev)
+        run: |
+          cd wp-content/plugins/twig-loader/
+          composer install --prefer-dist --no-suggest --no-dev --optimize-autoloader --ignore-platform-reqs
+      - name: Remove source files
+        run: |
+          rm -rf 7.3linux.sh
+          cd wp-content/plugins/twig-loader/
+          rm -rf .gitignore
+          rm -rf auth.json
+          rm -rf composer.lock
+      - name: Generate zip file
+        run: |
+          cd wp-content/plugins/twig-loader/
+          zip -r twig-loader.zip .
+          mv twig-loader.zip ../
+      - name: Upload zip to release assets
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./wp-content/plugins/twig-loader.zip
+          asset_name: twig-loader-${{ github.event.release.tag_name }}.zip
+          asset_content_type: application/zip
