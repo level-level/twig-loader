@@ -1,6 +1,7 @@
 {
     "name": "level-level/twig-loader",
     "type": "wordpress-plugin",
+    "license": "MIT",
     "authors": [
         {
             "name": "Coen Jacobs",
